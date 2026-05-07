@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>完美圓形挑戰</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Zen+Dots&family=Noto+Sans+TC:wght@300;400;700&display=swap');
+
+  :root {
+    --bg: #0a0a0f;
+    --surface: #12121a;
+    --border: #1e1e2e;
+    --accent: #00ffcc;
+    --accent2: #ff4d8f;
+    --accent3: #7c4dff;
+    --text: #e8e8f0;
+    --muted: #5a5a7a;
+    --gold: #ffd700;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Noto Sans TC', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow-x: hidden;
+  }
+
+  /* Grid background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,255,204,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,255,204,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 900px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+  }
+
+  /* Header */
+  header {
+    text-align: center;
+    padding: 10px 0;
+  }
+
+  header h1 {
+    font-family: 'Zen Dots', cursive;
+    font-size: clamp(1.6rem, 4vw, 2.8rem);
+    background: linear-gradient(135deg, var(--accent), var(--accent3), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: 0.05em;
+  }
+
+  header p {
+    color: var(--muted);
+    font-size: 0.85rem;
+    margin-top: 4px;
+    letter-spacing: 0.1em;
+  }
+
+  /* Main layout */
+  .main-layout {
+    display: grid;
+    grid-template-columns: 1fr 240px;
+    gap: 16px;
+    width: 100%;
+  }
+
+  @media (max-width: 680px) {
+    .main-layout { grid-template-columns: 1fr; }
+  }
+
+  /* Canvas area */
+  .canvas-wrap {
+    position: relative;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    aspect-ratio: 1;
+    cursor: crosshair;
+  }
+
+  .canvas-wrap::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 16px;
+    box-shadow: inset 0 0 60px rgba(0,255,204,0.04);
+    pointer-events: none;
+  }
+
+  canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+    touch-action: none;
+  }
+
+  /* Overlay for result */
+  .result-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(10,10,15,0.85);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.4s ease;
+    border-radius: 16px;
+    backdrop-filter: blur(6px);
+  }
+
+  .result-overlay.show {
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  .result-pct {
+    font-family: 'Zen Dots', cursive;
+    font-size: clamp(3rem, 12vw, 5.5rem);
+    line-height: 1;
+  }
+
+  .result-label {
+    font-size: 0.9rem;
+    color: var(--muted);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+  }
+
+  .result-grade {
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin-top: 4px;
+  }
+
+  .result-pts {
+    font-size: 0.85rem;
+    color: var(--gold);
+    letter-spacing: 0.1em;
+  }
+
+  .btn-retry {
+    margin-top: 8px;
+    padding: 10px 28px;
+    background: transparent;
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    font-family: 'Zen Dots', cursive;
+    font-size: 0.85rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.1em;
+  }
+
+  .btn-retry:hover {
+    background: var(--accent);
+    color: var(--bg);
+    box-shadow: 0 0 20px rgba(0,255,204,0.4);
+  }
+
+  /* Hint text on canvas */
+  .hint {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--muted);
+    font-size: 0.9rem;
+    letter-spacing: 0.15em;
+    pointer-events: none;
+    transition: opacity 0.3s;
+  }
+
+  .hint.hidden { opacity: 0; }
+
+  /* Sidebar */
+  .sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px;
+  }
+
+  .panel-title {
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 12px;
+  }
+
+  /* Stats */
+  .stat-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.85rem;
+  }
+
+  .stat-row:last-child { border-bottom: none; }
+
+  .stat-val {
+    font-family: 'Zen Dots', cursive;
+    font-size: 1rem;
+    color: var(--accent);
+  }
+
+  .stat-val.gold { color: var(--gold); }
+
+  /* Leaderboard */
+  .lb-entry {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.82rem;
+  }
+
+  .lb-entry:last-child { border-bottom: none; }
+
+  .lb-rank {
+    font-family: 'Zen Dots', cursive;
+    font-size: 0.75rem;
+    color: var(--muted);
+    width: 18px;
+    flex-shrink: 0;
+  }
+
+  .lb-rank.top { color: var(--gold); }
+
+  .lb-name {
+    flex: 1;
+    color: var(--text);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .lb-score {
+    font-family: 'Zen Dots', cursive;
+    font-size: 0.8rem;
+    color: var(--accent2);
+    flex-shrink: 0;
+  }
+
+  .lb-mine {
+    background: rgba(0,255,204,0.06);
+    border-radius: 6px;
+    padding-left: 6px;
+    padding-right: 4px;
+  }
+
+  /* Name input */
+  .name-input {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 10px;
+    color: var(--text);
+    font-family: 'Noto Sans TC', sans-serif;
+    font-size: 0.85rem;
+    outline: none;
+    transition: border-color 0.2s;
+    margin-bottom: 10px;
+  }
+
+  .name-input:focus { border-color: var(--accent); }
+
+  /* Progress bar */
+  .progress-bar-bg {
+    width: 100%;
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-top: 2px;
+  }
+
+  .progress-bar {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 0.5s ease;
+    background: linear-gradient(90deg, var(--accent3), var(--accent));
+  }
+
+  /* Flash effect on canvas border */
+  @keyframes flash-border {
+    0%   { box-shadow: 0 0 0 0 rgba(0,255,204,0); }
+    30%  { box-shadow: 0 0 0 4px rgba(0,255,204,0.6); }
+    100% { box-shadow: 0 0 0 0 rgba(0,255,204,0); }
+  }
+
+  .canvas-wrap.flash { animation: flash-border 0.6s ease-out; }
+
+  .history-dots {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-top: 4px;
+  }
+
+  .dot {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.6rem;
+    font-family: 'Zen Dots', cursive;
+    border: 1px solid var(--border);
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>PERFECT CIRCLE</h1>
+    <p>用手畫出最完美的圓 · 挑戰極限</p>
+  </header>
+
+  <div class="main-layout">
+    <!-- Canvas -->
+    <div class="canvas-wrap" id="canvasWrap">
+      <canvas id="canvas"></canvas>
+      <div class="hint" id="hint">按住並拖曳來畫圓</div>
+      <div class="result-overlay" id="resultOverlay">
+        <div class="result-label">完美程度</div>
+        <div class="result-pct" id="resultPct">—</div>
+        <div class="result-grade" id="resultGrade"></div>
+        <div class="result-pts" id="resultPts"></div>
+        <button class="btn-retry" id="retryBtn">再試一次</button>
+      </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <!-- Player -->
+      <div class="panel">
+        <div class="panel-title">玩家名稱</div>
+        <input class="name-input" id="nameInput" type="text" placeholder="輸入名字..." maxlength="10" value="Player">
+      </div>
+
+      <!-- Stats -->
+      <div class="panel">
+        <div class="panel-title">本局統計</div>
+        <div class="stat-row">
+          <span>嘗試次數</span>
+          <span class="stat-val" id="attemptCount">0</span>
+        </div>
+        <div class="stat-row">
+          <span>最佳成績</span>
+          <span class="stat-val" id="bestScore">—</span>
+        </div>
+        <div class="stat-row">
+          <span>累積積分</span>
+          <span class="stat-val gold" id="totalPoints">0</span>
+        </div>
+        <div style="margin-top:10px">
+          <div style="font-size:0.7rem;color:var(--muted);margin-bottom:4px">歷次成績</div>
+          <div class="history-dots" id="historyDots"></div>
+        </div>
+      </div>
+
+      <!-- Leaderboard -->
+      <div class="panel">
+        <div class="panel-title">排行榜</div>
+        <div id="leaderboard"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── State ───────────────────────────────────────────────────────
+const state = {
+  drawing: false,
+  points: [],
+  attempts: 0,
+  bestScore: null,
+  totalPoints: 0,
+  history: [],
+  leaderboard: JSON.parse(localStorage.getItem('circleLeaderboard') || '[]'),
+};
+
+// ─── Canvas setup ─────────────────────────────────────────────────
+const wrap = document.getElementById('canvasWrap');
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+let DPR = window.devicePixelRatio || 1;
+let SIZE = 0;
+
+function resizeCanvas() {
+  const rect = wrap.getBoundingClientRect();
+  SIZE = Math.min(rect.width, rect.height);
+  canvas.width = SIZE * DPR;
+  canvas.height = SIZE * DPR;
+  ctx.scale(DPR, DPR);
+  drawGuide();
+}
+
+function drawGuide() {
+  ctx.clearRect(0, 0, SIZE, SIZE);
+  // subtle center cross
+  ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(SIZE/2, 0); ctx.lineTo(SIZE/2, SIZE);
+  ctx.moveTo(0, SIZE/2); ctx.lineTo(SIZE, SIZE/2);
+  ctx.stroke();
+}
+
+// ─── Drawing ──────────────────────────────────────────────────────
+function getPos(e) {
+  const rect = canvas.getBoundingClientRect();
+  const src = e.touches ? e.touches[0] : e;
+  return {
+    x: (src.clientX - rect.left) * (SIZE / rect.width),
+    y: (src.clientY - rect.top)  * (SIZE / rect.height),
+  };
+}
+
+canvas.addEventListener('mousedown',  onStart);
+canvas.addEventListener('mousemove',  onMove);
+canvas.addEventListener('mouseup',    onEnd);
+canvas.addEventListener('mouseleave', onEnd);
+canvas.addEventListener('touchstart', e => { e.preventDefault(); onStart(e); }, { passive: false });
+canvas.addEventListener('touchmove',  e => { e.preventDefault(); onMove(e);  }, { passive: false });
+canvas.addEventListener('touchend',   e => { e.preventDefault(); onEnd(e);   }, { passive: false });
+
+function onStart(e) {
+  if (document.getElementById('resultOverlay').classList.contains('show')) return;
+  state.drawing = true;
+  state.points = [];
+  drawGuide();
+  document.getElementById('hint').classList.add('hidden');
+  const p = getPos(e);
+  state.points.push(p);
+}
+
+function onMove(e) {
+  if (!state.drawing) return;
+  const p = getPos(e);
+  state.points.push(p);
+
+  // Draw stroke
+  ctx.strokeStyle = '#00ffcc';
+  ctx.lineWidth = 2.5;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  ctx.shadowColor = '#00ffcc';
+  ctx.shadowBlur = 6;
+
+  const pts = state.points;
+  ctx.beginPath();
+  ctx.moveTo(pts[pts.length-2]?.x ?? p.x, pts[pts.length-2]?.y ?? p.y);
+  ctx.lineTo(p.x, p.y);
+  ctx.stroke();
+  ctx.shadowBlur = 0;
+}
+
+function onEnd() {
+  if (!state.drawing || state.points.length < 20) {
+    state.drawing = false;
+    return;
+  }
+  state.drawing = false;
+  const score = analyzeCircle(state.points);
+  showResult(score);
+}
+
+// ─── Analysis ─────────────────────────────────────────────────────
+function analyzeCircle(pts) {
+  // centroid
+  let cx = 0, cy = 0;
+  pts.forEach(p => { cx += p.x; cy += p.y; });
+  cx /= pts.length; cy /= pts.length;
+
+  // average radius
+  const radii = pts.map(p => Math.hypot(p.x - cx, p.y - cy));
+  const avgR = radii.reduce((a,b) => a+b, 0) / radii.length;
+
+  // Metric 1: radius consistency (std dev / mean)
+  const variance = radii.reduce((a,b) => a + (b-avgR)**2, 0) / radii.length;
+  const stdR = Math.sqrt(variance);
+  const consistency = Math.max(0, 1 - (stdR / avgR) * 2.5);
+
+  // Metric 2: closure — how close is the end to the start
+  const start = pts[0], end = pts[pts.length - 1];
+  const closureDist = Math.hypot(end.x - start.x, end.y - start.y);
+  const closureScore = Math.max(0, 1 - closureDist / (avgR * 1.5));
+
+  // Metric 3: angular coverage (did they go around?)
+  const angles = pts.map(p => Math.atan2(p.y - cy, p.x - cx));
+  let totalTurn = 0;
+  for (let i = 1; i < angles.length; i++) {
+    let d = angles[i] - angles[i-1];
+    if (d >  Math.PI) d -= 2*Math.PI;
+    if (d < -Math.PI) d += 2*Math.PI;
+    totalTurn += d;
+  }
+  const coverage = Math.min(1, Math.abs(totalTurn) / (2 * Math.PI));
+
+  // Weighted final score
+  const raw = consistency * 0.55 + closureScore * 0.25 + coverage * 0.20;
+  return Math.round(Math.min(100, Math.max(0, raw * 100)));
+}
+
+// ─── Result display ───────────────────────────────────────────────
+function gradeInfo(score) {
+  if (score >= 98) return { label: '🏆 傳奇完美', color: '#ffd700' };
+  if (score >= 90) return { label: '✨ 接近完美', color: '#00ffcc' };
+  if (score >= 75) return { label: '👍 非常不錯', color: '#7c4dff' };
+  if (score >= 55) return { label: '😊 還不錯啦', color: '#4dd0e1' };
+  if (score >= 35) return { label: '😅 繼續練習', color: '#ff9800' };
+  return { label: '💪 加油加油', color: '#ff4d8f' };
+}
+
+function showResult(score) {
+  state.attempts++;
+  const pts = score * 10;
+  state.totalPoints += pts;
+  state.history.push(score);
+  if (state.bestScore === null || score > state.bestScore) state.bestScore = score;
+
+  updateStats();
+  updateHistory();
+  submitToLeaderboard(score);
+
+  const overlay = document.getElementById('resultOverlay');
+  const pctEl = document.getElementById('resultPct');
+  const gradeEl = document.getElementById('resultGrade');
+  const ptsEl = document.getElementById('resultPts');
+
+  const { label, color } = gradeInfo(score);
+  pctEl.textContent = score + '%';
+  pctEl.style.color = color;
+  pctEl.style.textShadow = `0 0 30px ${color}80`;
+  gradeEl.textContent = label;
+  gradeEl.style.color = color;
+  ptsEl.textContent = `＋${pts} 積分`;
+
+  overlay.classList.add('show');
+
+  // Flash border
+  wrap.classList.remove('flash');
+  void wrap.offsetWidth;
+  wrap.classList.add('flash');
+}
+
+document.getElementById('retryBtn').addEventListener('click', () => {
+  document.getElementById('resultOverlay').classList.remove('show');
+  document.getElementById('hint').classList.remove('hidden');
+  drawGuide();
+});
+
+// ─── Stats UI ─────────────────────────────────────────────────────
+function updateStats() {
+  document.getElementById('attemptCount').textContent = state.attempts;
+  document.getElementById('bestScore').textContent = state.bestScore !== null ? state.bestScore + '%' : '—';
+  document.getElementById('totalPoints').textContent = state.totalPoints;
+}
+
+function updateHistory() {
+  const container = document.getElementById('historyDots');
+  container.innerHTML = '';
+  const recent = state.history.slice(-10);
+  recent.forEach(s => {
+    const { color } = gradeInfo(s);
+    const d = document.createElement('div');
+    d.className = 'dot';
+    d.textContent = s;
+    d.style.color = color;
+    d.style.borderColor = color + '55';
+    d.style.background = color + '10';
+    container.appendChild(d);
+  });
+}
+
+// ─── Leaderboard ─────────────────────────────────────────────────
+function submitToLeaderboard(score) {
+  const name = document.getElementById('nameInput').value.trim() || 'Player';
+  const existing = state.leaderboard.findIndex(e => e.name === name);
+  if (existing >= 0) {
+    state.leaderboard[existing].score = Math.max(state.leaderboard[existing].score, score);
+    state.leaderboard[existing].pts = (state.leaderboard[existing].pts || 0) + score * 10;
+  } else {
+    state.leaderboard.push({ name, score, pts: score * 10 });
+  }
+  state.leaderboard.sort((a, b) => b.score - a.score || b.pts - a.pts);
+  state.leaderboard = state.leaderboard.slice(0, 10);
+  localStorage.setItem('circleLeaderboard', JSON.stringify(state.leaderboard));
+  renderLeaderboard();
+}
+
+function renderLeaderboard() {
+  const name = document.getElementById('nameInput').value.trim() || 'Player';
+  const lb = document.getElementById('leaderboard');
+  if (state.leaderboard.length === 0) {
+    lb.innerHTML = '<div style="color:var(--muted);font-size:0.8rem;text-align:center;padding:8px 0">尚無紀錄</div>';
+    return;
+  }
+  lb.innerHTML = state.leaderboard.map((e, i) => `
+    <div class="lb-entry ${e.name === name ? 'lb-mine' : ''}">
+      <span class="lb-rank ${i < 3 ? 'top' : ''}">${['🥇','🥈','🥉'][i] ?? (i+1)}</span>
+      <span class="lb-name">${e.name}</span>
+      <span class="lb-score">${e.score}%</span>
+    </div>
+  `).join('');
+}
+
+// ─── Init ─────────────────────────────────────────────────────────
+document.getElementById('nameInput').addEventListener('input', renderLeaderboard);
+
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+renderLeaderboard();
+updateStats();
+</script>
+</body>
+</html>
