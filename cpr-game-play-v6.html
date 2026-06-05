@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SAVE THE SANDWICH</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Share+Tech+Mono&display=swap');
+* { margin:0; padding:0; box-sizing:border-box; }
+html, body { width:100%; height:100%; overflow:hidden; font-family:'Fredoka One', cursive; }
+
+body {
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:32px;
+  background-color: #e8c8c8;
+  background-image:
+    repeating-linear-gradient(90deg,
+      rgba(155,25,25,0.30) 0px, rgba(155,25,25,0.30) 48px,
+      transparent 48px, transparent 96px),
+    repeating-linear-gradient(0deg,
+      rgba(155,25,25,0.30) 0px, rgba(155,25,25,0.30) 48px,
+      transparent 48px, transparent 96px),
+    linear-gradient(145deg, #FDEAEA 0%, #F5D5D5 100%);
+}
+
+/* ── TITLE ROW: dying sandwich + text ── */
+.title-row {
+  display:flex;
+  align-items:center;
+  gap:14px;
+}
+
+.title {
+  font-size: clamp(26px, 3.2vw, 38px);
+  color:#C02020;
+  text-shadow: 2px 2px 0 rgba(255,255,255,0.7), 4px 4px 0 rgba(140,10,10,0.4);
+  animation: titleWave 3s ease-in-out infinite;
+  white-space: nowrap;
+}
+@keyframes titleWave {
+  0%,100%{ transform:rotate(-1.5deg) scale(1); }
+  50%    { transform:rotate(1.5deg) scale(1.02); }
+}
+
+/* ── TINY CSS SANDWICH (title icon) ── */
+.sw-icon {
+  filter: drop-shadow(0 4px 8px rgba(130,60,0,.28));
+  animation: sandBreathe 2.4s ease-in-out infinite;
+  flex-shrink:0;
+}
+@keyframes sandBreathe {
+  0%,100%{ transform:scale(1) rotate(-2deg); }
+  50%    { transform:scale(1.04) rotate(-2.5deg); }
+}
+.sw-icon .sw { width:52px; display:flex; flex-direction:column; align-items:center; }
+.sw-icon .bread-top {
+  width:52px; height:15px;
+  background:linear-gradient(160deg,#F7CC72,#E0A030);
+  border-radius:7px 7px 2px 2px;
+  border:2px solid #C48030;
+  position:relative;
+}
+.sw-icon .face {
+  position:absolute;
+  bottom:1px; left:50%; transform:translateX(-50%);
+  display:flex; flex-direction:column; align-items:center; gap:1px;
+}
+.sw-icon .eyes { display:flex; gap:8px; }
+.sw-icon .eye  { position:relative; width:6px; height:6px; }
+.sw-icon .eye::before,.sw-icon .eye::after {
+  content:''; position:absolute;
+  width:8px; height:1.5px; background:#5C3200; border-radius:2px;
+  top:50%; left:50%;
+}
+.sw-icon .eye::before{ transform:translate(-50%,-50%) rotate(45deg);  }
+.sw-icon .eye::after { transform:translate(-50%,-50%) rotate(-45deg); }
+.sw-icon .tongue {
+  width:7px; height:6px;
+  background:#FF6B6B; border-radius:0 0 50% 50%;
+  border:1.5px solid #C0315A;
+  animation:loll 2s ease-in-out infinite;
+}
+@keyframes loll { 0%,100%{transform:rotate(-4deg);} 50%{transform:rotate(4deg);} }
+.sw-icon .sw-lettuce { width:57px; height:4px; background:#5DC462; border:1.5px solid #2E7D32; border-radius:2px; }
+.sw-icon .sw-cheese  { width:55px; height:4px; background:#FFDA44; border:1.5px solid #D4A000; border-radius:2px; }
+.sw-icon .sw-meat    { width:53px; height:9px; background:linear-gradient(180deg,#F9BFBB,#E88888); border:1.5px solid #C06060; border-radius:2px; margin-top:2px; }
+.sw-icon .sw-tomato  { width:51px; height:4px; background:#FF5050; border:1.5px solid #BB2020; border-radius:2px; margin-top:2px; }
+.sw-icon .sw-bot     { width:52px; height:11px; background:linear-gradient(180deg,#F5C96A,#DFA030); border-radius:2px 2px 6px 6px; border:2px solid #C48030; box-shadow:0 2px 0 #9A6820; }
+
+/* ── ECG MONITOR AREA ── */
+.monitor {
+  position:relative;
+  width: min(820px, 90vw);
+  height: 200px;
+}
+
+canvas {
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+}
+
+/* overlay stats drawn in JS — but also static labels via HTML */
+.ecg-labels {
+  position:absolute;
+  top:6px; left:8px;
+  display:flex; gap:16px;
+  font-family:'Share Tech Mono', monospace;
+  font-size:11px;
+  color:rgba(150,30,30,0.7);
+  pointer-events:none;
+  z-index:5;
+}
+.ecg-labels span { letter-spacing:1px; }
+
+.ecg-labels-right {
+  position:absolute;
+  top:6px; right:8px;
+  font-family:'Share Tech Mono', monospace;
+  font-size:11px;
+  color:rgba(150,30,30,0.7);
+  pointer-events:none;
+  z-index:5;
+  text-align:right;
+}
+
+/* small sandwich on left of ECG line */
+.sw-ecg {
+  position:absolute;
+  left:16px;
+  top:50%;
+  transform:translateY(-50%);
+  z-index:10;
+  filter: drop-shadow(0 4px 10px rgba(130,60,0,.3));
+  animation: sandBreathe2 2.4s ease-in-out infinite;
+}
+@keyframes sandBreathe2 {
+  0%,100%{ transform:translateY(-50%) scale(1) rotate(-1.5deg); }
+  50%    { transform:translateY(-50%) scale(0.97) rotate(-2deg); }
+}
+.sw-ecg .sw { width:56px; display:flex; flex-direction:column; align-items:center; }
+.sw-ecg .bread-top {
+  width:56px; height:16px;
+  background:linear-gradient(160deg,#F7CC72,#E0A030);
+  border-radius:8px 8px 2px 2px;
+  border:2px solid #C48030; position:relative;
+}
+.sw-ecg .face {
+  position:absolute;
+  bottom:2px; left:50%; transform:translateX(-50%);
+  display:flex; flex-direction:column; align-items:center; gap:1px;
+}
+.sw-ecg .eyes { display:flex; gap:9px; }
+.sw-ecg .eye  { position:relative; width:6px; height:6px; }
+.sw-ecg .eye::before,.sw-ecg .eye::after {
+  content:''; position:absolute;
+  width:8px; height:1.5px; background:#5C3200; border-radius:2px;
+  top:50%; left:50%;
+}
+.sw-ecg .eye::before{ transform:translate(-50%,-50%) rotate(45deg);  }
+.sw-ecg .eye::after { transform:translate(-50%,-50%) rotate(-45deg); }
+.sw-ecg .tongue {
+  width:8px; height:6px;
+  background:#FF6B6B; border-radius:0 0 50% 50%;
+  border:1.5px solid #C0315A;
+  animation:loll 2s ease-in-out infinite;
+}
+.sw-ecg .sw-lettuce { width:62px; height:4px; background:#5DC462; border:1.5px solid #2E7D32; border-radius:2px; }
+.sw-ecg .sw-cheese  { width:60px; height:4px; background:#FFDA44; border:1.5px solid #D4A000; border-radius:2px; }
+.sw-ecg .sw-meat    {
+  width:58px; height:9px; background:linear-gradient(180deg,#F9BFBB,#E88888);
+  border:1.5px solid #C06060; border-radius:2px; margin-top:2px; position:relative;
+}
+.sw-ecg .drip {
+  position:absolute; bottom:-4px;
+  width:3px; height:4px; background:#DD5555;
+  border-radius:0 0 50% 50%;
+  animation:drip 2.6s ease-in-out infinite;
+}
+.sw-ecg .drip:nth-child(1){ left:8px;  animation-delay:0s; }
+.sw-ecg .drip:nth-child(2){ left:28px; animation-delay:.9s; }
+.sw-ecg .drip:nth-child(3){ left:46px; animation-delay:1.8s; }
+@keyframes drip { 0%,55%{height:4px;opacity:1;} 100%{height:8px;opacity:0;} }
+.sw-ecg .sw-tomato { width:56px; height:4px; background:#FF5050; border:1.5px solid #BB2020; border-radius:2px; margin-top:2px; }
+.sw-ecg .sw-bot    { width:56px; height:12px; background:linear-gradient(180deg,#F5C96A,#DFA030); border-radius:2px 2px 6px 6px; border:2px solid #C48030; box-shadow:0 2px 0 #9A6820; }
+</style>
+</head>
+<body>
+
+<!-- TITLE ROW: css sandwich + text -->
+<div class="title-row">
+  <div class="sw-icon">
+    <div class="sw">
+      <div class="bread-top">
+        <div class="face">
+          <div class="eyes"><div class="eye"></div><div class="eye"></div></div>
+          <div class="tongue"></div>
+        </div>
+      </div>
+      <div class="sw-lettuce"></div>
+      <div class="sw-cheese"></div>
+      <div class="sw-meat"></div>
+      <div class="sw-tomato"></div>
+      <div class="sw-bot"></div>
+    </div>
+  </div>
+  <div class="title">SAVE THE SANDWICH</div>
+</div>
+
+<!-- ECG MONITOR -->
+<div class="monitor">
+
+  <!-- top-left labels -->
+  <div class="ecg-labels">
+    <span>PATIENT-001</span>
+    <span>HR: <span id="hrVal">--</span> bpm</span>
+    <span>SPO₂: <span id="spo2Val">--</span>%</span>
+  </div>
+
+  <!-- top-right -->
+  <div class="ecg-labels-right">
+    <span id="timeVal">00:00</span>
+  </div>
+
+  <canvas id="ecg"></canvas>
+</div>
+
+<script>
+const canvas = document.getElementById('ecg');
+const ctx = canvas.getContext('2d');
+
+function resize() { canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight; }
+resize();
+window.addEventListener('resize', resize);
+
+let normalised = 0;
+const pts = [];
+let frame = 0;
+const CYCLE = 55;
+
+// live HR display
+let lastHR = '--';
+let beatCount = 0;
+let lastBeatFrame = 0;
+let prevShape = 0;
+let spo2 = 98;
+
+// timer
+const startTime = Date.now();
+function updateTime() {
+  const s = Math.floor((Date.now()-startTime)/1000);
+  const mm = String(Math.floor(s/60)).padStart(2,'0');
+  const ss = String(s%60).padStart(2,'0');
+  document.getElementById('timeVal').textContent = mm+':'+ss;
+}
+setInterval(updateTime, 1000);
+
+function ecgShape(phase) {
+  if (phase < 0.30) return 0;
+  if (phase < 0.37) return -(phase-0.30)/0.07*0.28;
+  if (phase < 0.44) return  (phase-0.37)/0.07;
+  if (phase < 0.50) return 1-(phase-0.44)/0.06;
+  if (phase < 0.56) return -(phase-0.50)/0.06*0.22;
+  if (phase < 0.62) return  (phase-0.56)/0.06*0.22;
+  if (phase < 0.74) return  0.15*Math.sin((phase-0.62)/0.12*Math.PI);
+  return 0;
+}
+
+function draw() {
+  const W = canvas.width, H = canvas.height, mid = H/2;
+  ctx.clearRect(0,0,W,H);
+
+  const shape = ecgShape((frame%CYCLE)/CYCLE);
+
+  // detect R peak to compute HR
+  if (prevShape < 0.8 && shape >= 0.8 && normalised > 0.05) {
+    const interval = frame - lastBeatFrame;
+    if (interval > 10) {
+      const bpm = Math.round(60 / (interval / 60));
+      lastHR = Math.min(200, Math.max(30, bpm));
+      document.getElementById('hrVal').textContent = lastHR;
+      spo2 = Math.max(88, Math.min(99, 95 + Math.round((normalised-0.5)*6)));
+      document.getElementById('spo2Val').textContent = spo2;
+    }
+    lastBeatFrame = frame;
+  }
+  prevShape = shape;
+
+  pts.push(shape * normalised);
+  if (pts.length > W) pts.shift();
+
+  // grid lines (faint, medical monitor feel)
+  ctx.strokeStyle = 'rgba(180,60,60,0.12)';
+  ctx.lineWidth = 1;
+  for(let gx=0; gx<W; gx+=W/8) {
+    ctx.beginPath(); ctx.moveTo(gx,0); ctx.lineTo(gx,H); ctx.stroke();
+  }
+  for(let gy=0; gy<H; gy+=H/4) {
+    ctx.beginPath(); ctx.moveTo(0,gy); ctx.lineTo(W,gy); ctx.stroke();
+  }
+
+  // baseline dashed
+  ctx.beginPath();
+  ctx.strokeStyle = 'rgba(140,30,30,0.40)';
+  ctx.lineWidth = 1.5;
+  ctx.setLineDash([8,12]);
+  ctx.moveTo(0,mid); ctx.lineTo(W,mid);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  if (pts.length > 1) {
+    const active = normalised > 0.04;
+
+    if (active) {
+      ctx.beginPath();
+      ctx.strokeStyle = 'rgba(200,20,20,0.20)';
+      ctx.lineWidth = 18;
+      ctx.lineJoin='round'; ctx.lineCap='round';
+      for(let i=0;i<pts.length;i++){
+        const x=i/pts.length*W, y=mid-pts[i]*H*0.40;
+        i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+      }
+      ctx.stroke();
+    }
+
+    ctx.beginPath();
+    ctx.strokeStyle = active ? '#BB1818' : 'rgba(130,40,40,0.50)';
+    ctx.lineWidth   = active ? 3.5 : 2;
+    ctx.lineJoin='round'; ctx.lineCap='round';
+    for(let i=0;i<pts.length;i++){
+      const x=i/pts.length*W, y=mid-pts[i]*H*0.40;
+      i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+    }
+    ctx.stroke();
+
+    const lx = W-2, ly = mid-pts[pts.length-1]*H*0.40;
+    ctx.beginPath();
+    ctx.arc(lx, ly, active?6:3.5, 0, Math.PI*2);
+    ctx.fillStyle = active?'#BB1818':'rgba(130,40,40,0.50)';
+    ctx.fill();
+
+    // scale bar bottom-right
+    const font = '10px "Share Tech Mono", monospace';
+    ctx.font = font;
+    ctx.fillStyle = 'rgba(140,30,30,0.55)';
+    ctx.fillText('1mV', W-38, H-6);
+    ctx.beginPath();
+    ctx.strokeStyle = 'rgba(140,30,30,0.45)';
+    ctx.lineWidth = 1.5;
+    ctx.moveTo(W-48, H-18); ctx.lineTo(W-48, H-10); // vertical
+    ctx.lineTo(W-38, H-10);                           // horizontal
+    ctx.stroke();
+  }
+
+  frame++;
+  requestAnimationFrame(draw);
+}
+draw();
+
+window.fsrValue = 0;
+function setPressure(raw) {
+  normalised = Math.max(0, Math.min(1, raw/1023));
+  window.fsrValue = normalised;
+  if (normalised < 0.04) {
+    document.getElementById('hrVal').textContent = '--';
+    document.getElementById('spo2Val').textContent = '--';
+  }
+}
+
+// ── Web Serial: auto-connect on page load ──
+// First visit: open file in Chrome, then run this in console once to grant port:
+//   navigator.serial.requestPort().then(p => p.open({baudRate:9600}))
+// After that, the page auto-connects every time.
+
+async function initSerial() {
+  if (!navigator.serial) return;
+  try {
+    // try previously-granted ports first (no user gesture needed)
+    let port;
+    const granted = await navigator.serial.getPorts();
+    if (granted.length > 0) {
+      port = granted[0];
+    } else {
+      // first time: need user gesture — triggered by clicking anywhere
+      await new Promise(resolve => {
+        document.addEventListener('click', async () => {
+          try { port = await navigator.serial.requestPort(); } catch(e) {}
+          resolve();
+        }, { once: true });
+      });
+    }
+    if (!port) return;
+    await port.open({ baudRate: 9600 });
+    const dec = new TextDecoderStream();
+    port.readable.pipeTo(dec.writable);
+    const reader = dec.readable.getReader();
+    let buf = '';
+    while (true) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      buf += value;
+      const lines = buf.split('\n'); buf = lines.pop();
+      for (const l of lines) {
+        const n = parseInt(l.trim());
+        if (!isNaN(n)) setPressure(n);
+      }
+    }
+  } catch(e) { console.log('Serial:', e); }
+}
+initSerial();
+
+document.addEventListener('keydown',e=>{
+  if(e.key===' ')         setPressure(860);
+  if(e.key==='ArrowUp')   setPressure(Math.min(1023,normalised*1023+100));
+  if(e.key==='ArrowDown') setPressure(Math.max(0,   normalised*1023-100));
+});
+document.addEventListener('keyup',e=>{ if(e.key===' ')setPressure(0); });
+</script>
+</body>
+</html>
