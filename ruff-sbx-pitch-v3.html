@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RUFF × Starbucks — The Caffeine Initiative · Pitch 2026</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Grotesk:ital,wght@0,300;0,400;0,700;1,300;1,700&family=Noto+Sans+TC:wght@300;400;700&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{width:100%;height:100%;overflow:hidden;background:#0d0b08;}
+body{font-family:'Space Grotesk','Noto Sans TC',sans-serif;color:#e8dfc8;}
+
+:root{
+  --black:#0d0b08;
+  --off:#f0ead8;
+  --cream:#e0d5be;
+  --tan:#c8a96e;
+  --tan2:#d4b87a;
+  --muted:#6a5e4a;
+  --dim:#2e2820;
+  --red:#b03a2a;
+  --green:#3a8050;
+}
+
+/* deck */
+#deck{position:fixed;inset:0;}
+.slide{position:absolute;inset:0;opacity:0;pointer-events:none;transition:opacity .4s;background:var(--black);overflow:hidden;}
+.slide.active{opacity:1;pointer-events:all;}
+
+/* noise */
+.slide::before{content:'';position:absolute;inset:0;z-index:1;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.055'/%3E%3C/svg%3E");
+  background-size:200px 200px;pointer-events:none;}
+
+/* chapter watermark — huge BG text */
+.ch-mark{
+  position:absolute;right:-2vw;bottom:-4vw;z-index:1;
+  font-family:'Bebas Neue',sans-serif;
+  font-size:26vw;line-height:1;
+  color:rgba(200,169,110,.028);
+  letter-spacing:.04em;pointer-events:none;user-select:none;
+}
+
+/* inner */
+.s-inner{position:relative;z-index:2;height:100%;padding:48px 60px 80px;display:flex;flex-direction:column;justify-content:center;}
+
+/* chapter label strip — top left, big section number + name */
+.ch-label{
+  display:flex;align-items:baseline;gap:14px;
+  margin-bottom:14px;
+}
+.ch-num{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:clamp(52px,7vw,88px);
+  line-height:.9;
+  color:var(--tan);
+  letter-spacing:.04em;
+}
+.ch-name{
+  font-size:9px;letter-spacing:.22em;text-transform:uppercase;
+  color:var(--muted);border-left:1px solid var(--dim);padding-left:14px;
+  line-height:1.5;
+}
+
+/* headline */
+.hero{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:clamp(36px,5.5vw,72px);
+  line-height:1;letter-spacing:.03em;
+  color:var(--off);margin-bottom:16px;
+}
+.hero .ac{color:var(--tan);}
+.hero .rd{color:var(--red);}
+
+/* sub */
+.sub{font-size:12px;color:var(--muted);line-height:1.7;font-weight:300;max-width:560px;}
+
+.rule{width:32px;height:1px;background:var(--dim);margin:12px 0;}
+
+/* stats */
+.stats{display:grid;gap:1px;margin-top:16px;background:var(--dim);}
+.s4{grid-template-columns:repeat(4,1fr);}
+.s3{grid-template-columns:repeat(3,1fr);}
+.s2{grid-template-columns:1fr 1fr;}
+.stat{background:var(--black);padding:16px 14px;}
+.sn{font-family:'Bebas Neue',sans-serif;font-size:38px;letter-spacing:.02em;line-height:1;color:var(--tan);}
+.sn.rd{color:var(--red);}
+.sn.gr{color:var(--green);}
+.ss{font-size:10px;color:var(--muted);margin-top:4px;line-height:1.45;}
+.src{font-size:8px;color:var(--dim);margin-top:3px;letter-spacing:.04em;}
+
+/* pains */
+.pains{display:flex;flex-direction:column;gap:1px;margin-top:14px;background:var(--dim);}
+.pain{background:var(--black);padding:11px 18px;display:grid;grid-template-columns:120px 1fr;gap:14px;}
+.plabel{font-size:8px;letter-spacing:.16em;color:var(--muted);text-transform:uppercase;padding-top:2px;}
+.ptext{font-size:12px;color:#8a7a60;line-height:1.55;font-weight:300;}
+.ptext strong{color:var(--cream);font-weight:500;}
+
+/* two col */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:1px;margin-top:14px;background:var(--dim);}
+.col-block{background:var(--black);padding:18px;}
+.col-h{font-size:8px;letter-spacing:.2em;text-transform:uppercase;margin-bottom:10px;}
+.col-h.rd{color:#7a2a1a;}
+.col-h.gr{color:var(--green);}
+.col-h.tan{color:var(--muted);}
+.col-item{display:flex;align-items:flex-start;gap:8px;padding:5px 0;border-bottom:1px solid var(--dim);font-size:11px;color:#6a5e4a;line-height:1.45;}
+.col-item:last-child{border:none;}
+.col-item strong{color:var(--cream);}
+.col-dot{width:4px;height:4px;border-radius:50%;flex-shrink:0;margin-top:5px;}
+
+/* feature table */
+.ftable{width:100%;border-collapse:collapse;margin-top:14px;}
+.ftable thead th{font-size:8px;letter-spacing:.18em;text-transform:uppercase;color:var(--dim);padding:6px 10px;border-bottom:1px solid var(--dim);text-align:left;background:var(--black);}
+.ftable tbody tr{background:var(--black);border-bottom:1px solid #161410;}
+.ftable tbody tr:last-child{border:none;}
+.ftable td{font-size:11px;padding:10px 10px;color:#6a5e4a;vertical-align:top;line-height:1.5;}
+.ftable td:first-child{color:var(--cream);font-weight:500;}
+.pill{display:inline-block;font-size:8px;letter-spacing:.06em;text-transform:uppercase;padding:2px 6px;margin-bottom:3px;}
+.py{background:#1a1200;color:var(--tan);}
+.pg{background:#091409;color:var(--green);}
+.pb{background:#090e18;color:#6a9ad4;}
+
+/* drinks */
+.drinks{display:grid;grid-template-columns:1fr 1fr;gap:1px;margin-top:14px;background:var(--dim);}
+.drink{background:var(--black);padding:18px;}
+.drink-name{font-family:'Bebas Neue',sans-serif;font-size:26px;color:var(--off);letter-spacing:.04em;line-height:1;}
+.drink-eng{font-size:8px;letter-spacing:.18em;text-transform:uppercase;color:var(--dim);margin-bottom:12px;margin-top:2px;}
+.drow{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #161410;font-size:11px;}
+.drow:last-child{border:none;}
+.dk{color:var(--muted);}
+.dv{color:#6a5e4a;}
+.dv.hi{color:var(--green);}
+
+/* success */
+.qs{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;margin-top:14px;background:var(--dim);}
+.q{background:var(--black);padding:16px;}
+.ql{font-size:8px;letter-spacing:.18em;text-transform:uppercase;color:var(--dim);margin-bottom:5px;}
+.qt{font-family:'Bebas Neue',sans-serif;font-size:18px;color:var(--cream);letter-spacing:.04em;margin-bottom:8px;line-height:1.1;}
+.qk{font-size:11px;color:var(--muted);line-height:1.65;}
+
+/* cases */
+.cases{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;margin-top:14px;background:var(--dim);}
+.case{background:var(--black);padding:16px;}
+.case-loc{font-size:8px;letter-spacing:.18em;text-transform:uppercase;color:var(--dim);margin-bottom:4px;}
+.case-name{font-family:'Bebas Neue',sans-serif;font-size:18px;color:var(--cream);letter-spacing:.04em;margin-bottom:5px;}
+.case-desc{font-size:11px;color:var(--muted);line-height:1.5;}
+
+/* cta */
+.ctabox{border:1px solid var(--dim);padding:22px 26px;background:var(--black);margin-top:16px;}
+.ctabox p{font-size:13px;color:var(--muted);line-height:1.85;font-weight:300;}
+.ctabox strong{color:var(--cream);font-weight:500;}
+.ctabox em{color:var(--tan);font-style:normal;font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:.04em;}
+
+/* cover */
+.cover-grid{display:grid;grid-template-columns:1fr 310px;height:100%;position:relative;z-index:2;}
+.cover-left{padding:48px 60px;display:flex;flex-direction:column;justify-content:center;border-right:1px solid var(--dim);}
+.cover-right{padding:48px 36px;display:flex;flex-direction:column;justify-content:center;gap:28px;}
+.cstat-n{font-family:'Bebas Neue',sans-serif;font-size:44px;color:var(--tan);letter-spacing:.04em;line-height:1;}
+.cstat-l{font-size:10px;color:var(--muted);line-height:1.5;margin-top:3px;}
+
+/* progress / nav / timer */
+#prog{position:fixed;top:0;left:0;height:2px;background:var(--tan);z-index:200;transition:width .4s;}
+#snum{position:fixed;top:22px;left:28px;z-index:100;font-size:8px;letter-spacing:.22em;color:var(--dim);text-transform:uppercase;}
+#timer{position:fixed;top:19px;right:28px;z-index:100;display:flex;align-items:center;gap:9px;}
+#tv{font-family:'Bebas Neue',sans-serif;font-size:19px;color:var(--tan);letter-spacing:.06em;}
+#tbar{width:44px;height:1px;background:var(--dim);overflow:hidden;}
+#tfill{height:100%;background:var(--tan);width:100%;transition:width 1s linear;}
+#nav{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:16px;z-index:100;}
+#nav button{background:none;border:none;color:var(--dim);cursor:pointer;font-size:13px;font-family:inherit;transition:color .2s;}
+#nav button:hover{color:var(--off);}
+#dots{display:flex;gap:5px;align-items:center;}
+.dot{width:4px;height:4px;border-radius:50%;background:var(--dim);transition:all .3s;cursor:pointer;}
+.dot.on{background:var(--tan);width:16px;border-radius:2px;}
+#slabel{font-size:8px;color:var(--dim);letter-spacing:.14em;min-width:42px;text-align:center;}
+.accent-line{position:absolute;bottom:0;left:0;right:0;height:1px;background:var(--dim);z-index:3;}
+</style>
+</head>
+<body>
+<div id="prog"></div>
+<div id="snum"></div>
+<div id="timer"><span id="tv">5:00</span><div id="tbar"><div id="tfill"></div></div></div>
+<div id="deck">
+
+<!-- ══ 0 COVER ══ -->
+<div class="slide active">
+  <div class="ch-mark">RUFF</div>
+  <div class="cover-grid">
+    <div class="cover-left">
+      <div style="font-size:8px;letter-spacing:.28em;color:var(--dim);text-transform:uppercase;margin-bottom:36px;">RUFF Taipei × Starbucks — The Caffeine Initiative</div>
+      <div class="hero" style="font-size:clamp(56px,9vw,116px);line-height:.92;">HIGH<br>ON<br><span class="ac">CAFFEINE.</span></div>
+      <div class="rule"></div>
+      <div class="sub">以咖啡因取代酒精，重新定義亞洲夜場文化。<br>You only have five minutes. This is everything.</div>
+    </div>
+    <div class="cover-right">
+      <div><div class="cstat-n">30–45%</div><div class="cstat-l">台灣人有 Asian Flush 基因缺陷<br>夜場完全把這群人排除在外</div></div>
+      <div style="width:32px;height:1px;background:var(--dim);"></div>
+      <div><div class="cstat-n" style="color:var(--off);">+478%</div><div class="cstat-l">全球 Coffee Rave 場次增長<br>Eventbrite 2025</div></div>
+      <div style="width:32px;height:1px;background:var(--dim);"></div>
+      <div><div class="cstat-n" style="color:var(--off);">0</div><div class="cstat-l">台北目前的無酒精品牌夜場<br>這就是機會視窗</div></div>
+    </div>
+  </div>
+  <div class="accent-line"></div>
+</div>
+
+<!-- ══ 1 · 01 INDUSTRY CHALLENGE ══ -->
+<div class="slide">
+  <div class="ch-mark">01</div>
+  <div class="s-inner">
+    <div class="ch-label">
+      <div class="ch-num">01</div>
+      <div class="ch-name">Industry Challenge<br>業界挑戰</div>
+    </div>
+    <div class="hero">夜場靠<span class="ac">酒精</span>賺錢<br>但酒精的代價正在<span class="rd">反撲</span></div>
+    <div class="sub">酒精不只傷身——它把 30–45% 的台灣消費者排除在外，並摧毀隔天的生產力。</div>
+    <div class="stats s4">
+      <div class="stat"><div class="sn rd">30–45%</div><div class="ss">台灣人有 ALDH2 基因缺陷（Asian Flush）——喝一口就臉紅頭痛，基因決定，非選擇</div><div class="src">Cedars-Sinai / Wiley, 2023</div></div>
+      <div class="stat"><div class="sn rd">24.9%</div><div class="ss">宿醉隔天工作效率損失——每 4 工作小時就有 1 小時消失</div><div class="src">PMC Hangover Study, 2024</div></div>
+      <div class="stat"><div class="sn rd">$46億</div><div class="ss">美國 2010 年宿醉造成職場缺勤損失（美元），實際因生產力損耗更高</div><div class="src">Sacks et al. / Sage Journals</div></div>
+      <div class="stat"><div class="sn rd">↓10%</div><div class="ss">18–35 歲飲酒率二十年下滑幅度（72%→62%），Gen Z 主動選擇不喝</div><div class="src">Gallup, 2023</div></div>
+    </div>
+  </div>
+  <div class="accent-line"></div>
+</div>
+
+<!-- ══ 2 · 02 WHY IT MATTERS ══ -->
+<div class="slide">
+  <div class="ch-mark">02</div>
+  <div class="s-inner">
+    <div class="ch-label">
+      <div class="ch-num">02</div>
+      <div class="ch-name">Why It Matters<br>為什麼值得被創造</div>
+    </div>
+    <div class="hero">Coffee Rave 已是<br><span class="ac">全球真實趨勢</span></div>
+    <div class="sub">從新加坡、首爾到倫敦，這不是假設——這是正在發生的文化轉移，而台北還沒有人做。</div>
+    <div class="stats s3" style="margin-bottom:12px;">
+      <div class="stat"><div class="sn">+478%</div><div class="ss">全球 Coffee Clubbing 場次同比增長</div><div class="src">Eventbrite, 2025</div></div>
+      <div class="stat"><div class="sn">+92%</div><div class="ss">Sober-curious 聚會增長，美國 16 大城市</div><div class="src">Eventbrite H1, 2025</div></div>
+      <div class="stat"><div class="sn">65%</div><div class="ss">Gen Z 計劃減少飲酒：睡眠、心理健康、體能</div><div class="src">Consumer Survey, 2024–25</div></div>
+    </div>
+    <div class="cases">
+      <div class="case"><div class="case-loc">Singapore · 2024</div><div class="case-name">Beans &amp; Beats</div><div class="case-desc">三人公寓派對起步，成長為定期品牌。老宅、屋頂、博物館為場地。Tatler Asia 專題報導。</div></div>
+      <div class="case"><div class="case-loc">Seoul · 2024</div><div class="case-name">Seoul Morning Coffee Club</div><div class="case-desc">清晨咖啡 rave，數百人從被窩起床跳舞。CNN 報導稱「病毒式成功」，亞洲清醒夜場指標。</div></div>
+      <div class="case"><div class="case-loc">Global · Since 2010</div><div class="case-name">Daybreaker</div><div class="case-desc">全球最早清醒 rave 品牌，單場 500–800 人。現於 DC、紐約、倫敦常態舉辦。</div></div>
+    </div>
+  </div>
+  <div class="accent-line"></div>
+</div>
+
+<!-- ══ 3 · 03 BUSINESS OPPORTUNITY ══ -->
+<div class="slide">
+  <div class="ch-mark">03</div>
+  <div class="s-inner">
+    <div class="ch-label">
+      <div class="ch-num">03</div>
+      <div class="ch-name">Business Opportunity<br>潛在商業機會</div>
+    </div>
+    <div class="hero">Starbucks 缺少的<br>正是<span class="ac">夜晚</span></div>
+    <div class="sub">Starbucks 10 點關門。RUFF 凌晨 2 點才開始。這是天然的時間互補，也是高毛利的夜間場景空白。</div>
+    <div class="stats s3">
+      <div class="stat">
+        <div class="sn">24hr</div>
+        <div class="ss">品牌生命週期延伸——早上咖啡廳、深夜 rave，讓 Starbucks 真正陪伴消費者一整天</div>
+      </div>
+      <div class="stat">
+        <div class="sn">×3</div>
+        <div class="ss">客單價提升——夜場場景平均客單 NT$650，遠高於門市 NT$180。Premium 定位、高毛利</div>
+      </div>
+      <div class="stat">
+        <div class="sn">~75%</div>
+        <div class="ss">兩款聯名飲品預估毛利率——接近零邊際成本的品牌授權場景，風險極低</div>
+      </div>
+    </div>
+  </div>
+  <div class="accent-line"></div>
+</div>
+
+<!-- ══ 4 · 04 TARGET SEGMENT ══ -->
+<div class="slide">
+  <div class="ch-mark">04</div>
+  <div class="s-inner">
+    <div class="ch-label">
+      <div class="ch-num">04</div>
+      <div class="ch-name">Target Segment<br>目標客群</div>
+    </div>
+    <div class="hero">目標客群<br>非常<span class="ac">具體</span></div>
+    <div class="sub">能付費 + 有迫切需求 + 願意為品質溢價 = 被嚴重低估的市場。</div>
+    <div class="pains" style="margin-top:16px;">
+      <div class="pain"><div class="plabel">年齡</div><div class="ptext"><strong>18–30 歲</strong> · 台北 · 熱愛音樂與夜生活的 Gen Z / 年輕 Millennial</div></div>
+      <div class="pain"><div class="plabel">身體狀況</div><div class="ptext">有 Asian Flush（ALDH2 基因缺陷）或主動選擇減少飲酒；不是不想玩，是身體不允許或不願意承受宿醉</div></div>
+      <div class="pain"><div class="plabel">消費心理</div><div class="ptext">願意為<strong>品質感、品牌信任、清醒的體驗</strong>付溢價；已是 Starbucks 或 RUFF 的既有粉絲</div></div>
+      <div class="pain"><div class="plabel">核心矛盾</div><div class="ptext">想要有氛圍、有音樂、有社群的夜生活，但台北現有選項全是酒精驅動——他們被迫<strong>在「喝酒出門」或「不出門」之間二選一</strong></div></div>
+    </div>
+  </div>
+  <div class="accent-line"></div>
+</div>
+
+<!-- ══ 5 · 05 CORE PAIN POINTS ══ -->
+<div class="slide">
+  <div class="ch-mark">05</div>
+  <div class="s-inner">
+    <div class="ch-label">
+      <div class="ch-num">05</div>
+      <div class="ch-name">Core Pain Points<br>核心痛點</div>
+    </div>
+    <div class="hero">三個痛點<br>一個<span class="ac">市場空白</span></div>
+    <div class="pains">
+      <div class="pain">
+        <div class="plabel">01 · BODY<br>身體排斥</div>
+        <div class="ptext"><strong>30–45%</strong> 台灣人有 ALDH2 基因缺陷（Asian Flush）——喝一口就臉紅、頭痛、噁心。這是基因事實，不是選擇。他們不是不想玩，是身體不允許。夜場完全沒有給這群人的選項。</div>
+      </div>
+      <div class="pain">
+        <div class="plabel">02 · COST<br>宿醉代價</div>
+        <div class="ptext">宿醉造成 <strong>24.9% 工作效率損失</strong>。對衝刺職涯的 18–30 歲，「享樂 → 宿醉 → 廢掉一天」的循環代價太高。許多人因此選擇不出門，而非選擇不喝酒。</div>
+      </div>
+      <div class="pain">
+        <div class="plabel">03 · SPACE<br>沒有場域</div>
+        <div class="ptext">台北夜場：酒吧、夜店，全是酒精驅動。咖啡廳晚上 10 點關門。想要有氛圍、有音樂、有社群但不喝酒的人，在台北 <strong>無處可去</strong>。這個缺口目前沒有任何品牌填補。</div>
+      </div>
+    </div>
+  </div>
+  <div class="accent-line"></div>
+</div>
+
+<!-- ══ 6 · 06 VALIDATION ══ -->
+<div class="slide">
+  <div class="ch-mark">06</div>
+  <div class="s-inner">
+    <div class="ch-label">
+      <div class="ch-num">06</div>
+      <div class="ch-name">Validation<br>驗證：這不是幻想</div>
+    </div>
+    <div class="hero">為什麼這個需求<br><span class="ac">真實存在</span>？</div>
+    <div class="two-col">
+      <div class="col-block">
+        <div class="col-h tan">三層驗證邏輯</div>
+        <div class="col-item"><div class="col-dot" style="background:var(--tan);"></div><div><strong>生理數據：</strong>30–45% 台灣人天生 ALDH2 缺陷——這是需求，不是偏好。（Wiley Health Economics, 2023）</div></div>
+        <div class="col-item"><div class="col-dot" style="background:var(--tan);"></div><div><strong>行為數據：</strong>Eventbrite 全球 Coffee Rave 場次 +478%，Gen Z 飲酒率持續下滑，市場正在移動。</div></div>
+        <div class="col-item"><div class="col-dot" style="background:var(--tan);"></div><div><strong>地理空白：</strong>新加坡 Beans &amp; Beats、首爾 Seoul Morning Coffee Club 已成功。台北是下一個未被填補的空白。</div></div>
+        <div class="col-item"><div class="col-dot" style="background:var(--tan);"></div><div><strong>媒體認證：</strong>CNN、Tatler Asia、BBC、Perfect Daily Grind 均已專題報導 Coffee Rave，話題性主流確認。</div></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:1px;background:var(--dim);">
+        <div class="stat" style="flex:1;"><div class="sn" style="font-size:34px;">30–45%</div><div class="ss">台灣人有 Asian Flush 基因缺陷</div><div class="src">Wiley / Cedars-Sinai</div></div>
+        <div class="stat" style="flex:1;"><div class="sn" style="font-size:34px;">+478%</div><div class="ss">全球 Coffee Rave 場次增長</div><div class="src">Eventbrite, 2025</div></div>
+        <div class="stat" style="flex:1;"><div class="sn" style="font-size:34px;">0</div><div class="ss">台北目前的無酒精品牌夜場</div><div class="src">市場現況</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="accent-line"></div>
+</div>
+
+<!-- ══ 7 · 07 PRODUCT VISION ══ -->
+<div class="slide">
+  <div class="ch-mark">07</div>
+  <div class="s-inner">
+    <div class="ch-label">
+      <div class="ch-num">07</div>
+      <div class="ch-name">Product Vision<br>產品願景 · 科學根據</div>
+    </div>
+    <div class="hero">同樣刺激<span class="ac">多巴胺</span><br>代價完全不同</div>
+    <div class="sub" style="margin-bottom:0;">咖啡因與酒精都能釋放多巴胺帶來興奮感——但一個讓你記得每一個 drop，一個讓你忘光一切。</div>
+    <div class="two-col" style="margin-top:12px;">
+      <div class="col-block">
+        <div class="col-h rd">🍺 酒精 — 快樂之後是代價</div>
+        <div class="col-item"><div class="col-dot" style="background:var(--red);"></div><div>刺激多巴胺釋放 → 產生 buzz 欣快感</div></div>
+        <div class="col-item"><div class="col-dot" style="background:var(--red);"></div><div>酒精代謝後多巴胺崩潰 → 宿醉憂鬱</div></div>
+        <div class="col-item"><div class="col-dot" style="background:var(--red);"></div><div>抑制大腦記憶形成——喝完忘光光</div></div>
+        <div class="col-item"><div class="col-dot" style="background:var(--red);"></div><div>脫水、傷肝、心律不整</div></div>
+        <div class="col-item"><div class="col-dot" style="background:var(--red);"></div><div>30–45% 東亞人基因排斥，Asian Flush</div></div>
+      </div>
+      <div class="col-block">
+        <div class="col-h gr">☕ 咖啡因 — 嗨，而且清醒</div>
+        <div class="col-item"><div class="col-dot" style="background:var(--green);"></div><div>阻斷腺苷受體 → 多巴胺＋血清素釋放 → 興奮上升</div></div>
+        <div class="col-item"><div class="col-dot" style="background:var(--green);"></div><div>效果持續 4–6 小時，無崩落式低落</div></div>
+        <div class="col-item"><div class="col-dot" style="background:var(--green);"></div><div>不抑制記憶——你記得每一個 drop</div></div>
+        <div class="col-item"><div class="col-dot" style="background:var(--green);"></div><div>適量攝取對心臟、代謝有正面效益</div></div>
+        <div class="col-item"><div class="col-dot" style="background:var(--green);"></div><div>無 ALDH2 限制，所有人都能嗨</div></div>
+      </div>
+    </div>
+    <div style="margin-top:8px;font-size:8px;color:var(--dim);text-align:right;">Source: FDA Caffeine Report · NIH PubMed · PBS Wisconsin Neuroscience · Sage Journals</div>
+  </div>
+  <div class="accent-line"></div>
+</div>
+
+<!-- ══ 8 · 08 MVP ══ -->
+<div class="slide">
+  <div class="ch-mark">08</div>
+  <div class="s-inner">
+    <div class="ch-label">
+      <div class="ch-num">08</div>
+      <div class="ch-name">MVP<br>最小可行產品</div>
+    </div>
+    <div class="hero">清醒地<span class="ac">嗨</span><br>這是核心產品</div>
+    <div class="sub" style="margin-bottom:0;">設計邏輯：模擬酒精的社交感與興奮感，移除所有副作用。一夜限定 Pop-up，兩款聯名飲品，300 人 RSVP。</div>
+    <div class="drinks">
+      <div class="drink">
+        <div class="drink-name">ESPRESSO-SHOT ENERGY</div>
+        <div class="drink-eng">The Night Starter · 夜場開場飲</div>
+        <div class="drow"><span class="dk">基底</span><span class="dv">Double shot cold brew + 氣泡水</span></div>
+        <div class="drow"><span class="dk">咖啡因</span><span class="dv hi">150mg（等同 2 杯濃縮）</span></div>
+        <div class="drow"><span class="dk">酒精</span><span class="dv hi">0%</span></div>
+        <div class="drow"><span class="dk">效果</span><span class="dv hi">45 分鐘內進入 peak energy</span></div>
+        <div class="drow"><span class="dk">Asian Flush 友善</span><span class="dv hi">100%</span></div>
+        <div class="drow"><span class="dk">宿醉</span><span class="dv hi">零風險</span></div>
+        <div class="drow"><span class="dk">售價 / 毛利</span><span class="dv">NT$180 · ~75%</span></div>
+      </div>
+      <div class="drink">
+        <div class="drink-name">COLD BREW-TINI</div>
+        <div class="drink-eng">The Social Drink · 派對社交飲</div>
+        <div class="drow"><span class="dk">基底</span><span class="dv">Cold brew + 椰子水 + 柑橘泡沫</span></div>
+        <div class="drow"><span class="dk">咖啡因</span><span class="dv hi">100mg + 電解質補充</span></div>
+        <div class="drow"><span class="dk">酒精</span><span class="dv hi">0%</span></div>
+        <div class="drow"><span class="dk">口感</span><span class="dv">模擬 cocktail 的複雜層次感</span></div>
+        <div class="drow"><span class="dk">Asian Flush 友善</span><span class="dv hi">100%</span></div>
+        <div class="drow"><span class="dk">隔天</span><span class="dv hi">完全正常，記得所有事</span></div>
+        <div class="drow"><span class="dk">售價 / 毛利</span><span class="dv">NT$220 · ~75%</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="accent-line"></div>
+</div>
+
+<!-- ══ 9 · 09 FEATURE-PAIN MATRIX ══ -->
+<div class="slide">
+  <div class="ch-mark">09</div>
+  <div class="s-inner">
+    <div class="ch-label">
+      <div class="ch-num">09</div>
+      <div class="ch-name">Feature-Pain Matrix<br>功能 × 痛點對應</div>
+    </div>
+    <div class="hero">每個功能<br>對應一個<span class="ac">真實痛點</span></div>
+    <table class="ftable">
+      <thead><tr><th>MVP 功能 / Feature</th><th>對應的痛點 / Pain</th><th>如何解決 / How</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>Starbucks 聯名咖啡因飲品<br><span style="font-size:9px;color:var(--dim);">Espresso-Shot Energy · Cold Brew-Tini</span></td>
+          <td>Asian Flush 族群無法喝酒，但沒有有「派對感」的無酒精替代品</td>
+          <td><span class="pill py">品牌信任</span><br>Starbucks 背書讓「無酒精」擺脫「無聊」；咖啡因提供等效多巴胺興奮感</td>
+        </tr>
+        <tr>
+          <td>RUFF Taipei Pop-up 夜場<br><span style="font-size:9px;color:var(--dim);">一夜限定 · 300人 RSVP · DJ 現場</span></td>
+          <td>台北無酒精夜場不存在，sober-curious 族群在台北沒有場域</td>
+          <td><span class="pill pg">場域創造</span><br>借用 RUFF 既有音響燈光設備，零裝修成本打造第一個有氛圍的清醒夜場</td>
+        </tr>
+        <tr>
+          <td>社群共製內容<br><span style="font-size:9px;color:var(--dim);">#CaffeineRave · IG · TikTok · Threads</span></td>
+          <td>無酒精夜場被認為「沒有話題性」，難以形成社群認同</td>
+          <td><span class="pill pb">有機傳播</span><br>兩個品牌粉絲互相滲透，讓市場自己成為話題，驗證需求而非自說自話</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="accent-line"></div>
+</div>
+
+<!-- ══ 10 · 10 DIFFERENTIATION ══ -->
+<div class="slide">
+  <div class="ch-mark">10</div>
+  <div class="s-inner">
+    <div class="ch-label">
+      <div class="ch-num">10</div>
+      <div class="ch-name">Differentiation<br>差異化 · 成功標準</div>
+    </div>
+    <div class="hero">市場上<span class="ac">沒有人</span><br>站在右上角</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1px;margin-top:14px;background:var(--dim);">
+      <div style="background:var(--black);padding:16px;">
+        <svg viewBox="0 0 340 230" style="width:100%;">
+          <line x1="24" y1="115" x2="318" y2="115" stroke="#2e2820" stroke-width="0.7"/>
+          <line x1="171" y1="12" x2="171" y2="222" stroke="#2e2820" stroke-width="0.7"/>
+          <text x="28" y="111" fill="#2e2820" font-size="7.5" font-family="Space Grotesk,sans-serif">低品牌信任</text>
+          <text x="230" y="111" fill="#2e2820" font-size="7.5" font-family="Space Grotesk,sans-serif">高品牌信任</text>
+          <text x="175" y="20" fill="#2e2820" font-size="7.5" font-family="Space Grotesk,sans-serif">高夜場氛圍</text>
+          <text x="175" y="218" fill="#2e2820" font-size="7.5" font-family="Space Grotesk,sans-serif">低夜場氛圍</text>
+          <circle cx="72" cy="58" r="20" fill="#100808" stroke="#280e0e" stroke-width="0.7"/>
+          <text x="72" y="55" fill="#4a2828" font-size="7.5" text-anchor="middle" font-family="Space Grotesk,sans-serif">夜店</text>
+          <text x="72" y="64" fill="#2e1a1a" font-size="6.5" text-anchor="middle" font-family="Space Grotesk,sans-serif">氛圍強·無品牌</text>
+          <circle cx="268" cy="178" r="20" fill="#081208" stroke="#0e2810" stroke-width="0.7"/>
+          <text x="268" y="175" fill="#284828" font-size="7.5" text-anchor="middle" font-family="Space Grotesk,sans-serif">Starbucks</text>
+          <text x="268" y="184" fill="#1a2e1a" font-size="6.5" text-anchor="middle" font-family="Space Grotesk,sans-serif">強品牌·日間</text>
+          <circle cx="76" cy="176" r="16" fill="#0d0b08" stroke="#2e2820" stroke-width="0.6"/>
+          <text x="76" y="173" fill="#3a3020" font-size="6.5" text-anchor="middle" font-family="Space Grotesk,sans-serif">機能飲料</text>
+          <text x="76" y="182" fill="#28241a" font-size="6" text-anchor="middle" font-family="Space Grotesk,sans-serif">弱·弱</text>
+          <circle cx="268" cy="54" r="26" fill="#1a1208" stroke="#c8a96e" stroke-width="1.2"/>
+          <text x="268" y="49" fill="#c8a96e" font-size="8" text-anchor="middle" font-weight="bold" font-family="Bebas Neue,sans-serif" letter-spacing="1">RUFF × SBX</text>
+          <text x="268" y="60" fill="#6a5020" font-size="7" text-anchor="middle" font-family="Space Grotesk,sans-serif">唯一的市場空白</text>
+        </svg>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:1px;background:var(--dim);">
+        <div class="col-block" style="flex:1;">
+          <div class="col-h rd">現有市場的問題</div>
+          <div class="col-item"><div class="col-dot" style="background:var(--red);"></div><div>夜店：酒精驅動，Asian Flush 族群被完全排除</div></div>
+          <div class="col-item"><div class="col-dot" style="background:var(--red);"></div><div>Starbucks：強品牌，10 點關門沒有夜場感</div></div>
+          <div class="col-item"><div class="col-dot" style="background:var(--red);"></div><div>機能飲料：無品牌認同，無體驗，無社群</div></div>
+        </div>
+        <div class="col-block" style="flex:1;">
+          <div class="col-h gr">成功標準 · MVP KPI</div>
+          <div class="col-item"><div class="col-dot" style="background:var(--green);"></div><div>飲品售出率 ≥ 80%，人均消費 ≥ NT$250</div></div>
+          <div class="col-item"><div class="col-dot" style="background:var(--green);"></div><div>IG 標籤曝光 ≥ 50 萬，KOL 自發報導 ≥ 5 位</div></div>
+          <div class="col-item"><div class="col-dot" style="background:var(--green);"></div><div>等待名單 ≥ 500 人，RUFF 確認下一場</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="accent-line"></div>
+</div>
+
+<!-- ══ 11 CTA ══ -->
+<div class="slide">
+  <div class="ch-mark">ASK</div>
+  <div class="s-inner">
+    <div class="ch-label">
+      <div class="ch-num" style="font-size:clamp(40px,6vw,72px);">ASK</div>
+      <div class="ch-name">我們需要什麼<br>The Proposal</div>
+    </div>
+    <div class="hero">給我們一個夜晚<br>我們還你<span class="ac">一個市場</span></div>
+    <div class="ctabox">
+      <p>台灣有 <strong>30–45% 的人</strong>基因上無法享受酒精。全球 Coffee Rave 場次 <em>+478%</em>。新加坡和首爾已經在做了。<br><br>
+      我們只需要 Starbucks 提供 <strong>產品授權 × 1 場</strong>、聯名包裝設計、社群帳號共同曝光。RUFF 負責場地、票務、現場執行。<strong>Starbucks 零場地成本投入</strong>，一個夜晚驗證整個亞洲夜間消費市場。<br><br>
+      台北還沒有人做這件事。<em>這就是機會視窗。</em></p>
+    </div>
+    <div style="position:absolute;bottom:28px;right:60px;font-size:8px;letter-spacing:.16em;color:var(--dim);text-transform:uppercase;z-index:3;">RUFF Taipei × Starbucks · The Caffeine Initiative · 2026</div>
+  </div>
+  <div class="accent-line"></div>
+</div>
+
+</div>
+
+<div id="nav">
+  <button id="prev">←</button>
+  <div id="dots"></div>
+  <button id="next">→</button>
+  <span id="slabel">00 / 12</span>
+</div>
+
+<script>
+const slides=document.querySelectorAll('.slide');
+const dotsEl=document.getElementById('dots');
+const labelEl=document.getElementById('slabel');
+const snumEl=document.getElementById('snum');
+const progEl=document.getElementById('prog');
+let cur=0;
+const titles=['Cover','01 · Industry Challenge','02 · Why It Matters','03 · Business Opportunity','04 · Target Segment','05 · Core Pain Points','06 · Validation','07 · Product Vision','08 · MVP','09 · Feature-Pain Matrix','10 · Differentiation','Ask'];
+slides.forEach((_,i)=>{const d=document.createElement('div');d.className='dot'+(i===0?' on':'');d.onclick=()=>go(i);dotsEl.appendChild(d);});
+function go(n){
+  slides[cur].classList.remove('active');
+  document.querySelectorAll('.dot')[cur].classList.remove('on');
+  cur=Math.max(0,Math.min(n,slides.length-1));
+  slides[cur].classList.add('active');
+  document.querySelectorAll('.dot')[cur].classList.add('on');
+  labelEl.textContent=String(cur+1).padStart(2,'0')+' / '+String(slides.length).padStart(2,'0');
+  snumEl.textContent=titles[cur]||'';
+  progEl.style.width=((cur/(slides.length-1))*100)+'%';
+}
+document.getElementById('prev').onclick=()=>go(cur-1);
+document.getElementById('next').onclick=()=>go(cur+1);
+document.addEventListener('keydown',e=>{
+  if(e.key==='ArrowRight'||e.key==='ArrowDown')go(cur+1);
+  if(e.key==='ArrowLeft'||e.key==='ArrowUp')go(cur-1);
+});
+let tx=0;
+document.addEventListener('touchstart',e=>tx=e.touches[0].clientX,{passive:true});
+document.addEventListener('touchend',e=>{const dx=e.changedTouches[0].clientX-tx;if(Math.abs(dx)>40){dx<0?go(cur+1):go(cur-1);}},{passive:true});
+let secs=300;
+const tvEl=document.getElementById('tv');
+const tfEl=document.getElementById('tfill');
+setInterval(()=>{
+  secs--;
+  if(secs<0){tvEl.textContent='TIME';tvEl.style.color='#b03a2a';return;}
+  const m=Math.floor(secs/60),s=secs%60;
+  tvEl.textContent=m+':'+(s<10?'0':'')+s;
+  tfEl.style.width=(secs/300*100)+'%';
+  if(secs<=60)tfEl.style.background='#b03a2a';
+  else if(secs<=120)tfEl.style.background='#7a4a1a';
+},1000);
+go(0);
+</script>
+</body>
+</html>
